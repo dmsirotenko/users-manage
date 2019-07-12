@@ -6,10 +6,13 @@ import com.sirotenkod.test.usersmanage.repository.UserRepository;
 import com.sirotenkod.test.usersmanage.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.lang.Nullable;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -30,12 +33,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDAO> getUsers() {
-        List<UserDAO> users = new ArrayList<>();
+        return userRepository.findAll();
+    }
 
-        userRepository.findAll().iterator()
-                .forEachRemaining(users::add);
+    @Override
+    public List<UserDAO> getUsers(@Nullable Sort sort) {
+        if (Objects.isNull(sort)) {
+            return getUsers();
+        }
 
-        return users;
+        return userRepository.findAll(sort);
     }
 
     @Override

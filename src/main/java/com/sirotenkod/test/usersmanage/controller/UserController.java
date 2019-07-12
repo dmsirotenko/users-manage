@@ -4,14 +4,17 @@ import com.sirotenkod.test.usersmanage.dao.UserDAO;
 import com.sirotenkod.test.usersmanage.dto.UserDTO;
 import com.sirotenkod.test.usersmanage.exception.NotFoundException;
 import com.sirotenkod.test.usersmanage.service.UserService;
+import com.sirotenkod.test.usersmanage.utils.SortUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
@@ -25,8 +28,14 @@ public class UserController {
     }
 
     @GetMapping
-    public @ResponseBody List<UserDTO> getUsers() {
-        return userService.getUsers().stream()
+    public @ResponseBody List<UserDTO> getUsers(@RequestParam(name = "sort", required = false) String[] sortParams) {
+        Sort sort = null;
+
+        if (!Objects.isNull(sortParams)) {
+            sort = SortUtils.sortParamsToSort(sortParams);
+        }
+
+        return userService.getUsers(sort).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
