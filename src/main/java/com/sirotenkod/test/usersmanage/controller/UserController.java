@@ -2,6 +2,7 @@ package com.sirotenkod.test.usersmanage.controller;
 
 import com.sirotenkod.test.usersmanage.dao.UserDAO;
 import com.sirotenkod.test.usersmanage.dto.UserDTO;
+import com.sirotenkod.test.usersmanage.exception.BadRequestException;
 import com.sirotenkod.test.usersmanage.exception.NotFoundException;
 import com.sirotenkod.test.usersmanage.service.UserService;
 import com.sirotenkod.test.usersmanage.utils.SortUtils;
@@ -32,6 +33,10 @@ public class UserController {
         Sort sort = null;
 
         if (!Objects.isNull(sortParams)) {
+            if (!SortUtils.sortParamsValid(sortParams)) {
+                throw new BadRequestException();
+            }
+
             sort = SortUtils.sortParamsToSort(sortParams);
         }
 

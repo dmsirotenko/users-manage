@@ -8,9 +8,13 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class SortUtils {
+    public static Boolean sortParamsValid(String[] sortParams) {
+        return true;
+    }
+
     public static Sort sortParamsToSort(String[] sortParams) {
         if (Objects.isNull(sortParams)) {
-            throw new IllegalArgumentException("Params can not be empty or null");
+            throw new IllegalArgumentException("Params can not be null");
         }
 
         List<Sort.Order> orders = Arrays.stream(sortParams)
@@ -20,7 +24,7 @@ public class SortUtils {
         return Sort.by(orders);
     }
 
-    public static Sort.Order sortParamToOrder(String param) {
+    private static Sort.Order sortParamToOrder(String param) {
         String[] props = param.split("\\.", 2);
 
         Sort.Direction direction;

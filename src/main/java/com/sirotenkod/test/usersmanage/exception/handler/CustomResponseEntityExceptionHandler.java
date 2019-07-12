@@ -1,13 +1,16 @@
 package com.sirotenkod.test.usersmanage.exception.handler;
 
+import com.sirotenkod.test.usersmanage.exception.BadRequestException;
 import com.sirotenkod.test.usersmanage.exception.NotFoundException;
 import com.sirotenkod.test.usersmanage.response.ErrorResponse;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -41,10 +44,20 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
         return super.handleExceptionInternal(ex, body, headers, status, request);
     }
 
-    @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Object> handleNotFound(Exception ex, WebRequest request) {
-        HttpHeaders headers = new HttpHeaders();
+    @ExceptionHandler({
+            NotFoundException.class,
+            BadRequestException.class
+    })
+    public ResponseEntity<Object> handleCustomException(Exception ex, WebRequest request) {
+        HttpStatus status = getAnnotatedStatus(ex);
 
-        return handleExceptionInternal(ex, null, headers, HttpStatus.NOT_FOUND, request);
+        return handleExceptionInternal(ex, null, new HttpHeaders(), status, request);
+    }
+
+    private HttpStatus getAnnotatedStatus(Exception ex) {
+        ResponseStatus annotation =
+                AnnotationUtils.findAnnotation(ex.getClass(), ResponseStatus.class);
+
+        return (HttpStatus) AnnotationUtils.getValue(annotation);
     }
 }
