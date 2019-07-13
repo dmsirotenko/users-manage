@@ -20,22 +20,25 @@ public class UserDAOSpecification implements Specification<UserDAO> {
     }
 
     @Override
-    public Predicate toPredicate(Root<UserDAO> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-        Predicate predicate = criteriaBuilder.disjunction();
+    public Predicate toPredicate(Root<UserDAO> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+        Predicate predicate = builder.disjunction();
 
         if (Objects.nonNull(filter.getId())) {
             predicate.getExpressions()
-                    .add(criteriaBuilder.equal(root.get("id"), filter.getId()));
+                    .add(builder.equal(root.get("id"), filter.getId()));
         }
 
         if (Objects.nonNull(filter.getName())) {
             predicate.getExpressions()
-                    .add(criteriaBuilder.like(root.get("name"), filter.getName()));
+                    .add(builder.like(
+                            builder.lower(root.get("name")),
+                            builder.lower(builder.literal("%" + filter.getName() + "%"))
+                    ));
         }
 
         if (Objects.nonNull(filter.getAge())) {
             predicate.getExpressions()
-                    .add(criteriaBuilder.equal(root.get("age"), filter.getAge()));
+                    .add(builder.equal(root.get("age"), filter.getAge()));
         }
 
         return predicate;
