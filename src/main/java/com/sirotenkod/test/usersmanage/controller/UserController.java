@@ -45,22 +45,20 @@ public class UserController {
             sort = SortUtils.sortParamsToSort(sortParams);
         }
 
-        return userService.getUsers(sort).stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        return convertToDTOList(userService.getUsers(sort));
     }
 
     @PostMapping
     public ResponseEntity<UserDTO> createUser(@RequestBody @Validated UserDTO userDTO) {
         UserDAO userDAO = userService.createUser(userDTO);
 
-        return new ResponseEntity<>(convertToDto(userDAO), HttpStatus.CREATED);
+        return new ResponseEntity<>(convertToDTO(userDAO), HttpStatus.CREATED);
     }
 
     @GetMapping(value = "/{id}")
     public @ResponseBody UserDTO getUser(@PathVariable Long id) {
         return userService.getUserById(id)
-                .map(this::convertToDto)
+                .map(this::convertToDTO)
                 .orElseThrow(NotFoundException::new);
     }
 
@@ -71,7 +69,7 @@ public class UserController {
 
         UserDAO updatedUser = userService.updateUser(userDAO, userDTO);
 
-        return convertToDto(updatedUser);
+        return convertToDTO(updatedUser);
     }
 
     @DeleteMapping(value = "/{id}")
@@ -84,9 +82,9 @@ public class UserController {
     @PostMapping(value = "/import")
     public @ResponseBody List<UserDTO> importUsers(@RequestParam(name = "file") MultipartFile file) {
         try {
-            return userImporter.importFromSheet(file.getInputStream()).stream()
-                    .map(this::convertToDto)
-                    .collect(Collectors.toList());
+            return convertToDTOList(
+                    userImporter.importFromSheet(file.getInputStream())
+            );
         } catch (FailedImportException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
         } catch (IOException ex) {
@@ -98,16 +96,20 @@ public class UserController {
     public @ResponseBody List<UserDTO> searchUsers(@ModelAttribute UserDTO filter) {
         Specification<UserDAO> specification = new UserDAOSpecification(filter);
 
-        return userService.searchUsers(specification).stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        return convertToDTOList(userService.searchUsers(specification));
     }
 
-    private UserDTO convertToDto(UserDAO userDAO) {
+    private UserDTO convertToDTO(UserDAO userDAO) {
         UserDTO userDTO = new UserDTO();
 
         BeanUtils.copyProperties(userDAO, userDTO);
 
         return userDTO;
+    }
+
+    private List<UserDTO> convertToDTOList(List<UserDAO> userDAOList) {
+        return userDAOList.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 }
