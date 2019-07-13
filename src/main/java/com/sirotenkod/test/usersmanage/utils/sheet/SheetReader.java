@@ -1,5 +1,6 @@
 package com.sirotenkod.test.usersmanage.utils.sheet;
 
+import com.sirotenkod.test.usersmanage.utils.sheet.exception.SheetReaderException;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -14,7 +15,7 @@ public class SheetReader {
         try {
             this.workbook = new XSSFWorkbook(inputStream);
         } catch (IOException ex) {
-            throw new RuntimeException("Failed to open a sheet from input stream", ex);
+            throw new SheetReaderException("Failed to open a sheet from input stream", ex);
         }
     }
 
@@ -26,7 +27,7 @@ public class SheetReader {
         XSSFSheet sheet = workbook.getSheetAt(index);
 
         if (Objects.isNull(sheet)) {
-            throw new IllegalArgumentException(String.format("Sheet with index %d not found", index));
+            throw new SheetReaderException(String.format("Sheet with index %d not found", index));
         }
 
         return new BeanReader<>(sheet, bean);

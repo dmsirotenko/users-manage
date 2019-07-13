@@ -8,6 +8,8 @@ import com.sirotenkod.test.usersmanage.service.UserService;
 import com.sirotenkod.test.usersmanage.utils.sheet.BeanReader;
 import com.sirotenkod.test.usersmanage.utils.sheet.SheetReader;
 import com.sirotenkod.test.usersmanage.utils.sheet.exception.BeanReaderException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +19,8 @@ import java.util.List;
 
 @Component
 public class UserImporterImpl implements UserImporter {
+    private final static Logger logger = LoggerFactory.getLogger(UserImporterImpl.class);
+
     private final UserService userService;
 
     @Autowired
@@ -47,8 +51,12 @@ public class UserImporterImpl implements UserImporter {
 
                 users.addAll(userService.createUsers(sheetUsers));
             } catch (BeanReaderException ex) {
+                logger.error("Failed to read from BeanReader", ex);
+
                 throw new FailedImportException("Excel structure is invalid: " + ex.getEntry().toString());
             } catch (Exception ex) {
+                logger.error("Import from sheet failed", ex);
+
                 throw new FailedImportException("Unable to import data");
             }
         }
