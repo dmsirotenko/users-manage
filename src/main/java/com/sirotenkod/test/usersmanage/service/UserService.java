@@ -3,6 +3,7 @@ package com.sirotenkod.test.usersmanage.service;
 import com.sirotenkod.test.usersmanage.dao.UserDAO;
 import com.sirotenkod.test.usersmanage.dto.UserDTO;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.lang.Nullable;
 
 import java.util.List;
@@ -14,6 +15,8 @@ public interface UserService {
 
     List<UserDAO> getUsers();
     List<UserDAO> getUsers(@Nullable Sort sort);
+
+    List<UserDAO> searchUsers(Specification<UserDAO> spec);
 
     Optional<UserDAO> getUserById(Long id);
 

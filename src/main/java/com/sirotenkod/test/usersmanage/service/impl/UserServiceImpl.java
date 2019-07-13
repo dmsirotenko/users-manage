@@ -4,9 +4,11 @@ import com.sirotenkod.test.usersmanage.dao.UserDAO;
 import com.sirotenkod.test.usersmanage.dto.UserDTO;
 import com.sirotenkod.test.usersmanage.repository.UserRepository;
 import com.sirotenkod.test.usersmanage.service.UserService;
+import org.hibernate.bytecode.enhance.internal.tracker.SortedFieldTracker;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
@@ -40,16 +42,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDAO> getUsers() {
-        return userRepository.findAll();
+        return userRepository.findAll(getDefaultSort());
     }
 
     @Override
     public List<UserDAO> getUsers(@Nullable Sort sort) {
         if (Objects.isNull(sort)) {
-            return getUsers();
+            sort = getDefaultSort();
         }
 
         return userRepository.findAll(sort);
+    }
+
+    @Override
+    public List<UserDAO> searchUsers(Specification<UserDAO> spec) {
+        return userRepository.findAll(spec, getDefaultSort());
     }
 
     @Override
@@ -71,5 +78,9 @@ public class UserServiceImpl implements UserService {
         BeanUtils.copyProperties(userDTO, userDAO, "id");
 
         return userRepository.save(userDAO);
+    }
+
+    private Sort getDefaultSort() {
+        return Sort.by(Sort.Direction.DESC, "id");
     }
 }

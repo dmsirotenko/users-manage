@@ -6,16 +6,17 @@ import com.sirotenkod.test.usersmanage.dto.UserDTO;
 import com.sirotenkod.test.usersmanage.exception.BadRequestException;
 import com.sirotenkod.test.usersmanage.exception.NotFoundException;
 import com.sirotenkod.test.usersmanage.component.importer.UserImporter;
+import com.sirotenkod.test.usersmanage.repository.specification.UserDAOSpecification;
 import com.sirotenkod.test.usersmanage.service.UserService;
 import com.sirotenkod.test.usersmanage.utils.SortUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -91,6 +92,15 @@ public class UserController {
         } catch (IOException ex) {
             throw new BadRequestException();
         }
+    }
+
+    @GetMapping(value = "/search")
+    public @ResponseBody List<UserDTO> searchUsers(UserDTO filter) {
+        Specification<UserDAO> specification = new UserDAOSpecification(filter);
+
+        return userService.searchUsers(specification).stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 
     private UserDTO convertToDto(UserDAO userDAO) {
