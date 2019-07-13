@@ -1,5 +1,7 @@
 package com.sirotenkod.test.usersmanage.dto;
 
+import com.sirotenkod.test.usersmanage.utils.sheet.annotation.SheetColumn;
+
 import javax.validation.constraints.NotBlank;
 
 public class UserDTO {
@@ -22,6 +24,7 @@ public class UserDTO {
         return name;
     }
 
+    @SheetColumn(index = 0)
     public void setName(String name) {
         this.name = name;
     }
@@ -30,6 +33,7 @@ public class UserDTO {
         return age;
     }
 
+    @SheetColumn(index = 1)
     public void setAge(Integer age) {
         this.age = age;
     }

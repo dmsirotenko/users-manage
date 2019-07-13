@@ -6,6 +6,8 @@ import com.sirotenkod.test.usersmanage.exception.BadRequestException;
 import com.sirotenkod.test.usersmanage.exception.NotFoundException;
 import com.sirotenkod.test.usersmanage.service.UserService;
 import com.sirotenkod.test.usersmanage.utils.SortUtils;
+import com.sirotenkod.test.usersmanage.utils.sheet.BeanReader;
+import com.sirotenkod.test.usersmanage.utils.sheet.SheetReader;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -13,7 +15,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -33,10 +38,6 @@ public class UserController {
         Sort sort = null;
 
         if (!Objects.isNull(sortParams)) {
-            if (!SortUtils.sortParamsValid(sortParams)) {
-                throw new BadRequestException();
-            }
-
             sort = SortUtils.sortParamsToSort(sortParams);
         }
 
@@ -70,10 +71,26 @@ public class UserController {
     }
 
     @DeleteMapping(value = "/{id}")
-    public @ResponseBody ResponseEntity<?> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping(value = "/import")
+    public @ResponseBody List<UserDTO> importUsers(@RequestParam(name = "file") MultipartFile file) {
+        try {
+            SheetReader sheetReader = new SheetReader(file.getInputStream());
+
+            BeanReader beanReader = sheetReader.getBeanReader(0, UserDTO.class);
+            beanReader.setSkipHeader(true);
+
+            beanReader.read();
+        } catch (IOException ex) {
+            throw new BadRequestException();
+        }
+
+        return Collections.emptyList();
     }
 
     private UserDTO convertToDto(UserDAO userDAO) {

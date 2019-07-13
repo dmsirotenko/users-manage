@@ -8,10 +8,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class SortUtils {
-    public static Boolean sortParamsValid(String[] sortParams) {
-        return true;
-    }
-
     public static Sort sortParamsToSort(String[] sortParams) {
         if (Objects.isNull(sortParams)) {
             throw new IllegalArgumentException("Params can not be null");
