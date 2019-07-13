@@ -8,8 +8,10 @@ public class UserDTO {
     private Long id;
 
     @NotBlank
+    @SheetColumn(index = 0)
     private String name;
 
+    @SheetColumn(index = 1)
     private Integer age;
 
     public Long getId() {
@@ -24,7 +26,6 @@ public class UserDTO {
         return name;
     }
 
-    @SheetColumn(index = 0)
     public void setName(String name) {
         this.name = name;
     }
@@ -33,7 +34,6 @@ public class UserDTO {
         return age;
     }
 
-    @SheetColumn(index = 1)
     public void setAge(Integer age) {
         this.age = age;
     }

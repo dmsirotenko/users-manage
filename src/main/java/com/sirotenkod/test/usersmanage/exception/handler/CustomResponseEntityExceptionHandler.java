@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.Objects;
@@ -52,6 +53,13 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
         HttpStatus status = getAnnotatedStatus(ex);
 
         return handleExceptionInternal(ex, null, new HttpHeaders(), status, request);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Object> handleResponseStatusException(ResponseStatusException ex, WebRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getStatus(), ex.getReason());
+
+        return handleExceptionInternal(ex, errorResponse, new HttpHeaders(), ex.getStatus(), request);
     }
 
     private HttpStatus getAnnotatedStatus(Exception ex) {

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -28,6 +29,13 @@ public class UserServiceImpl implements UserService {
         UserDAO userDAO = new UserDAO();
 
         return persistOrMerge(userDAO, userDTO);
+    }
+
+    @Override
+    public List<UserDAO> createUsers(List<UserDTO> userDTOList) {
+        return userDTOList.stream()
+                .map(this::createUser)
+                .collect(Collectors.toList());
     }
 
     @Override

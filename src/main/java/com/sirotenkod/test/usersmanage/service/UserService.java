@@ -10,6 +10,7 @@ import java.util.Optional;
 
 public interface UserService {
     UserDAO createUser(UserDTO userDTO);
+    List<UserDAO> createUsers(List<UserDTO> userDTOList);
 
     List<UserDAO> getUsers();
     List<UserDAO> getUsers(@Nullable Sort sort);

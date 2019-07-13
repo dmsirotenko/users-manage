@@ -1,13 +1,13 @@
 package com.sirotenkod.test.usersmanage.controller;
 
+import com.sirotenkod.test.usersmanage.component.importer.exception.FailedImportException;
 import com.sirotenkod.test.usersmanage.dao.UserDAO;
 import com.sirotenkod.test.usersmanage.dto.UserDTO;
 import com.sirotenkod.test.usersmanage.exception.BadRequestException;
 import com.sirotenkod.test.usersmanage.exception.NotFoundException;
+import com.sirotenkod.test.usersmanage.component.importer.UserImporter;
 import com.sirotenkod.test.usersmanage.service.UserService;
 import com.sirotenkod.test.usersmanage.utils.SortUtils;
-import com.sirotenkod.test.usersmanage.utils.sheet.BeanReader;
-import com.sirotenkod.test.usersmanage.utils.sheet.SheetReader;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -15,10 +15,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -27,10 +28,12 @@ import java.util.stream.Collectors;
 @RequestMapping(value = "/users")
 public class UserController {
     private final UserService userService;
+    private final UserImporter userImporter;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserImporter userImporter) {
         this.userService = userService;
+        this.userImporter = userImporter;
     }
 
     @GetMapping
@@ -80,17 +83,14 @@ public class UserController {
     @PostMapping(value = "/import")
     public @ResponseBody List<UserDTO> importUsers(@RequestParam(name = "file") MultipartFile file) {
         try {
-            SheetReader sheetReader = new SheetReader(file.getInputStream());
-
-            BeanReader beanReader = sheetReader.getBeanReader(0, UserDTO.class);
-            beanReader.setSkipHeader(true);
-
-            beanReader.read();
+            return userImporter.importFromSheet(file.getInputStream()).stream()
+                    .map(this::convertToDto)
+                    .collect(Collectors.toList());
+        } catch (FailedImportException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
         } catch (IOException ex) {
             throw new BadRequestException();
         }
-
-        return Collections.emptyList();
     }
 
     private UserDTO convertToDto(UserDAO userDAO) {

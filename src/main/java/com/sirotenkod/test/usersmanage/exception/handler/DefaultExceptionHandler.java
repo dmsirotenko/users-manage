@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class DefaultExceptionHandler {
@@ -18,7 +19,7 @@ public class DefaultExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception ex, WebRequest request) throws Exception {
         // If status is annotated, throw to spring handler
-        if (statusAnnotated(ex.getClass())) {
+        if (statusAnnotated(ex.getClass()) || ex instanceof ResponseStatusException) {
             throw ex;
         }
 
