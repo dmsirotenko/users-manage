@@ -95,7 +95,7 @@ public class UserController {
     }
 
     @GetMapping(value = "/search")
-    public @ResponseBody List<UserDTO> searchUsers(UserDTO filter) {
+    public @ResponseBody List<UserDTO> searchUsers(@ModelAttribute UserDTO filter) {
         Specification<UserDAO> specification = new UserDAOSpecification(filter);
 
         return userService.searchUsers(specification).stream()
