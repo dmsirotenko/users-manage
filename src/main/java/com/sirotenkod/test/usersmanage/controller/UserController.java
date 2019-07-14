@@ -6,6 +6,7 @@ import com.sirotenkod.test.usersmanage.dto.UserDTO;
 import com.sirotenkod.test.usersmanage.exception.BadRequestException;
 import com.sirotenkod.test.usersmanage.exception.NotFoundException;
 import com.sirotenkod.test.usersmanage.component.importer.UserImporter;
+import com.sirotenkod.test.usersmanage.repository.exception.RepositorySaveFailedException;
 import com.sirotenkod.test.usersmanage.repository.specification.UserDAOSpecification;
 import com.sirotenkod.test.usersmanage.service.UserService;
 import com.sirotenkod.test.usersmanage.utils.SortUtils;
@@ -50,9 +51,13 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserDTO> createUser(@RequestBody @Validated UserDTO userDTO) {
-        UserDAO userDAO = userService.createUser(userDTO);
+        try {
+            UserDAO userDAO = userService.createUser(userDTO);
 
-        return new ResponseEntity<>(convertToDTO(userDAO), HttpStatus.CREATED);
+            return new ResponseEntity<>(convertToDTO(userDAO), HttpStatus.CREATED);
+        } catch (RepositorySaveFailedException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Creation error");
+        }
     }
 
     @GetMapping(value = "/{id}")
@@ -67,13 +72,20 @@ public class UserController {
         UserDAO userDAO = userService.getUserById(id)
                 .orElseThrow(NotFoundException::new);
 
-        UserDAO updatedUser = userService.updateUser(userDAO, userDTO);
+        try {
+            UserDAO updatedUser = userService.updateUser(userDAO, userDTO);
 
-        return convertToDTO(updatedUser);
+            return convertToDTO(updatedUser);
+        } catch (RepositorySaveFailedException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Update error");
+        }
     }
 
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        userService.getUserById(id)
+                .orElseThrow(NotFoundException::new);
+
         userService.deleteUser(id);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

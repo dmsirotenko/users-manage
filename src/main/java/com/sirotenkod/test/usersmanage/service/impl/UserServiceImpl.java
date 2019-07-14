@@ -3,8 +3,10 @@ package com.sirotenkod.test.usersmanage.service.impl;
 import com.sirotenkod.test.usersmanage.dao.UserDAO;
 import com.sirotenkod.test.usersmanage.dto.UserDTO;
 import com.sirotenkod.test.usersmanage.repository.UserRepository;
+import com.sirotenkod.test.usersmanage.repository.exception.RepositorySaveFailedException;
 import com.sirotenkod.test.usersmanage.service.UserService;
-import org.hibernate.bytecode.enhance.internal.tracker.SortedFieldTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -19,6 +21,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+
     private final UserRepository userRepository;
 
     @Autowired
@@ -77,7 +81,13 @@ public class UserServiceImpl implements UserService {
     private UserDAO persistOrMerge(UserDAO userDAO, UserDTO userDTO) {
         BeanUtils.copyProperties(userDTO, userDAO, "id");
 
-        return userRepository.save(userDAO);
+        try {
+            return userRepository.save(userDAO);
+        } catch (Exception ex) {
+            logger.error("Failed to save entity", ex);
+
+            throw new RepositorySaveFailedException();
+        }
     }
 
     private Sort getDefaultSort() {
